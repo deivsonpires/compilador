@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Token:
-    type: str
-    value: str
-    line: int
-    column: int
+    tipo: str
+    lexema: str
+    linha: int
+    coluna: int

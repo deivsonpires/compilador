@@ -2,6 +2,11 @@
 
 Notação BNF. `*` = zero ou mais, `[ ]` = opcional, `|` = ou.
 
+O lexer apresenta os tokens pelas categorias gerais:
+`PALAVRA_CHAVE`, `DELIMITADOR`, `IDENTIFICADOR`, `STRING`, `NÚMERO` e
+`OPERADOR_LÓGICO`. Literais de caractere e de texto pertencem à categoria
+`STRING`.
+
 ```
 <Programa>    ::= <Comando>* EOF
 <Comando>     ::= <Declaracao> | <Atribuicao>
@@ -9,6 +14,6 @@ Notação BNF. `*` = zero ou mais, `[ ]` = opcional, `|` = ou.
 <Atribuicao>  ::= ID "=" <Expressao> ";"
 <Expressao>   ::= <Termo> ( ("+" | "-") <Termo> )*
 <Termo>       ::= <Fator> ( ("*" | "/" | "%") <Fator> )*
-<Fator>       ::= ID | NUM | CHAR | STRING | "(" <Expressao> ")"
+<Fator>       ::= IDENTIFICADOR | NÚMERO | STRING | "(" <Expressao> ")"
 <tipo>        ::= "int" | "float" | "char" | "double"
 ```

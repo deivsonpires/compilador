@@ -2,7 +2,7 @@ from tokens import Token
 from tab_simbol import Tab_Simbol
 
 
-KEYWORDS = {
+PALAVRAS_CHAVE = {
     "auto", "break", "case", "char", "const",
     "continue", "default", "do", "double", "else",
     "enum", "extern", "float", "for", "goto", "if",
@@ -12,324 +12,262 @@ KEYWORDS = {
     "while", "_Bool",
 }
 
-TYPE_KEYWORDS = {
-    "char", "double", "float", "int", "long",
-    "short", "signed", "unsigned", "void", "_Bool",
+OPERADORES = {
+    ">>=", "<<=", "++", "--", "==", "!=", "<=", ">=",
+    "&&", "||", "->", "+=", "-=", "*=", "/=", "%=",
+    "<<", ">>", "&=", "|=", "^=",
+    "+", "-", "*", "/", "%", "=", "<", ">", "!",
+    "&", "|", "^", "~",
 }
 
-# Operadores com mais de um caractere vêm primeiro.
-OPERATORS = {
-    ">>=": "RIGHT_SHIFT_ASSIGN",
-    "<<=": "LEFT_SHIFT_ASSIGN",
-    "++": "INCREMENT",
-    "--": "DECREMENT",
-    "==": "EQUAL",
-    "!=": "NOT_EQUAL",
-    "<=": "LESS_EQUAL",
-    ">=": "GREATER_EQUAL",
-    "&&": "LOGICAL_AND",
-    "||": "LOGICAL_OR",
-    "->": "ARROW",
-    "+=": "PLUS_ASSIGN",
-    "-=": "MINUS_ASSIGN",
-    "*=": "MULTIPLY_ASSIGN",
-    "/=": "DIVIDE_ASSIGN",
-    "%=": "MODULO_ASSIGN",
-    "<<": "LEFT_SHIFT",
-    ">>": "RIGHT_SHIFT",
-    "&=": "BIT_AND_ASSIGN",
-    "|=": "BIT_OR_ASSIGN",
-    "^=": "BIT_XOR_ASSIGN",
-}
-
-SINGLE_SIMBOLS = {
-    "+": "PLUS",
-    "-": "MINUS",
-    "*": "MULTIPLY",
-    "/": "DIVIDE",
-    "%": "MODULO",
-    "=": "ASSIGN",
-    "<": "LESS",
-    ">": "GREATER",
-    "!": "LOGICAL_NOT",
-    "&": "BIT_AND",
-    "|": "BIT_OR",
-    "^": "BIT_XOR",
-    "~": "BIT_NOT",
-    "?": "QUESTION",
-    ":": "COLON",
-    ";": "SEMICOLON",
-    ",": "COMMA",
-    ".": "DOT",
-    "(": "LPAREN",
-    ")": "RPAREN",
-    "{": "LBRACE",
-    "}": "RBRACE",
-    "[": "LBRACKET",
-    "]": "RBRACKET",
-    "#": "HASH",
+DELIMITADORES = {
+    "?", ":", ";", ",", ".", "(", ")", "{", "}",
+    "[", "]", "#",
 }
 
 
-class LexicalError(Exception):
+class ErroLexico(Exception):
     pass
 
 
-def lexer(source, tab_simbol=None):
-    if tab_simbol is None:
-        tab_simbol = Tab_Simbol()
+def analisar_lexico(codigo, tabela_simbolos=None):
+    if tabela_simbolos is None:
+        tabela_simbolos = Tab_Simbol()
 
     tokens = []
-    i = 0
-    line = 1
-    column = 1
-    length = len(source)
+    indice = 0
+    linha = 1
+    coluna = 1
+    tamanho = len(codigo)
 
-    def add_token(token_type, value, token_line, token_column):
-        tokens.append(
-            Token(token_type, value, token_line, token_column)
-        )
+    def adicionar_token(tipo, valor, linha_token, coluna_token):
+        tokens.append(Token(tipo, valor, linha_token, coluna_token))
 
-    while i < length:
-        char = source[i]
+    while indice < tamanho:
+        caractere = codigo[indice]
 
-        # Ignora espaços, tabulações e quebras de linha.
-        if char.isspace():
-            if char == "\n":
-                line += 1
-                column = 1
+        if caractere.isspace():
+            if caractere == "\n":
+                linha += 1
+                coluna = 1
             else:
-                column += 1
+                coluna += 1
 
-            i += 1
+            indice += 1
             continue
 
-        start_line = line
-        start_column = column
+        linha_inicial = linha
+        coluna_inicial = coluna
 
-        # Comentário de uma linha: // ...
-        if source.startswith("//", i):
-            while i < length and source[i] != "\n":
-                i += 1
-                column += 1
+        if codigo.startswith("//", indice):
+            while indice < tamanho and codigo[indice] != "\n":
+                indice += 1
+                coluna += 1
             continue
 
-        # Comentário de bloco: /* ... */
-        if source.startswith("/*", i):
-            i += 2
-            column += 2
-            closed = False
+        if codigo.startswith("/*", indice):
+            indice += 2
+            coluna += 2
+            fechado = False
 
-            while i < length:
-                if source.startswith("*/", i):
-                    i += 2
-                    column += 2
-                    closed = True
+            while indice < tamanho:
+                if codigo.startswith("*/", indice):
+                    indice += 2
+                    coluna += 2
+                    fechado = True
                     break
 
-                if source[i] == "\n":
-                    line += 1
-                    column = 1
-                    i += 1
+                if codigo[indice] == "\n":
+                    linha += 1
+                    coluna = 1
+                    indice += 1
                 else:
-                    i += 1
-                    column += 1
+                    indice += 1
+                    coluna += 1
 
-            if not closed:
-                raise LexicalError(
+            if not fechado:
+                raise ErroLexico(
                     f"Comentário de bloco não terminado "
-                    f"na linha {start_line}, "
-                    f"coluna {start_column}"
+                    f"na linha {linha_inicial}, "
+                    f"coluna {coluna_inicial}"
                 )
 
             continue
 
-        # Identificadores e palavras reservadas.
-        if char.isalpha() or char == "_":
-            start = i
+        if caractere.isalpha() or caractere == "_":
+            inicio = indice
 
-            while i < length and (
-                source[i].isalnum() or source[i] == "_"
+            while indice < tamanho and (
+                codigo[indice].isalnum() or codigo[indice] == "_"
             ):
-                i += 1
-                column += 1
+                indice += 1
+                coluna += 1
 
-            value = source[start:i]
+            valor = codigo[inicio:indice]
+            tipo = (
+                "PALAVRA_CHAVE"
+                if valor in PALAVRAS_CHAVE
+                else "IDENTIFICADOR"
+            )
 
-            if value in KEYWORDS:
-                token_type = "KEYWORD"
-                category = (
-                    "TYPE_KEYWORD"
-                    if value in TYPE_KEYWORDS
-                    else "RESERVED_WORD"
-                )
-            else:
-                token_type = "IDENTIFIER"
-                category = "IDENTIFIER"
+            tabela_simbolos.add(valor, tipo, tipo)
 
-            tab_simbol.add(value, category, token_type)
-            add_token(token_type, value, start_line, start_column)
+            adicionar_token(tipo, valor, linha_inicial, coluna_inicial)
             continue
 
-        # Números inteiros e decimais simples.
-        if char.isdigit():
-            start = i
-            is_float = False
+        if caractere.isdigit():
+            inicio = indice
 
-            while i < length and source[i].isdigit():
-                i += 1
-                column += 1
+            while indice < tamanho and codigo[indice].isdigit():
+                indice += 1
+                coluna += 1
 
             if (
-                i < length
-                and source[i] == "."
-                and i + 1 < length
-                and source[i + 1].isdigit()
+                indice < tamanho
+                and codigo[indice] == "."
+                and indice + 1 < tamanho
+                and codigo[indice + 1].isdigit()
             ):
-                is_float = True
-                i += 1
-                column += 1
+                indice += 1
+                coluna += 1
 
-                while i < length and source[i].isdigit():
-                    i += 1
-                    column += 1
+                while indice < tamanho and codigo[indice].isdigit():
+                    indice += 1
+                    coluna += 1
 
-            value = source[start:i]
-            token_type = "FLOAT" if is_float else "INTEGER"
-            add_token(token_type, value, start_line, start_column)
+            adicionar_token(
+                "NÚMERO",
+                codigo[inicio:indice],
+                linha_inicial,
+                coluna_inicial,
+            )
             continue
 
-        # Strings entre aspas duplas.
-        if char == '"':
-            start = i
-            i += 1
-            column += 1
-            closed = False
+        if caractere == '"':
+            inicio = indice
+            indice += 1
+            coluna += 1
+            fechado = False
 
-            while i < length:
-                if source[i] == "\\":
-                    # Trata sequências escapadas, como \" e \n.
-                    if i + 1 >= length:
+            while indice < tamanho:
+                if codigo[indice] == "\\":
+                    if indice + 1 >= tamanho:
                         break
 
-                    if source[i + 1] == "\n":
-                        raise LexicalError(
+                    if codigo[indice + 1] == "\n":
+                        raise ErroLexico(
                             f"Quebra de linha em string "
-                            f"na linha {line}, coluna {column}"
+                            f"na linha {linha}, coluna {coluna}"
                         )
 
-                    i += 2
-                    column += 2
+                    indice += 2
+                    coluna += 2
                     continue
 
-                if source[i] == '"':
-                    i += 1
-                    column += 1
-                    closed = True
+                if codigo[indice] == '"':
+                    indice += 1
+                    coluna += 1
+                    fechado = True
                     break
 
-                if source[i] == "\n":
-                    raise LexicalError(
+                if codigo[indice] == "\n":
+                    raise ErroLexico(
                         f"String não terminada na linha "
-                        f"{start_line}, coluna {start_column}"
+                        f"{linha_inicial}, coluna {coluna_inicial}"
                     )
 
-                i += 1
-                column += 1
+                indice += 1
+                coluna += 1
 
-            if not closed:
-                raise LexicalError(
+            if not fechado:
+                raise ErroLexico(
                     f"String não terminada na linha "
-                    f"{start_line}, coluna {start_column}"
+                    f"{linha_inicial}, coluna {coluna_inicial}"
                 )
 
-            add_token(
-                "STRING", source[start:i], start_line, start_column
+            adicionar_token(
+                "STRING", codigo[inicio:indice], linha_inicial, coluna_inicial
             )
             continue
 
-        # Caractere entre aspas simples.
-        if char == "'":
-            start = i
-            i += 1
-            column += 1
-            closed = False
+        if caractere == "'":
+            inicio = indice
+            indice += 1
+            coluna += 1
+            fechado = False
 
-            while i < length:
-                if source[i] == "\\":
-                    if i + 1 >= length:
-                        break
-                    if source[i + 1] == "\n":
+            while indice < tamanho:
+                if codigo[indice] == "\\":
+                    if indice + 1 >= tamanho or codigo[indice + 1] == "\n":
                         break
 
-                    i += 2
-                    column += 2
+                    indice += 2
+                    coluna += 2
                     continue
 
-                if source[i] == "'":
-                    i += 1
-                    column += 1
-                    closed = True
+                if codigo[indice] == "'":
+                    indice += 1
+                    coluna += 1
+                    fechado = True
                     break
 
-                if source[i] == "\n":
+                if codigo[indice] == "\n":
                     break
 
-                i += 1
-                column += 1
+                indice += 1
+                coluna += 1
 
-            if not closed:
-                raise LexicalError(
+            if not fechado:
+                raise ErroLexico(
                     f"Caractere não terminado na linha "
-                    f"{start_line}, coluna {start_column}"
+                    f"{linha_inicial}, coluna {coluna_inicial}"
                 )
 
-            add_token(
-                "CHAR_LITERAL",
-                source[start:i],
-                start_line,
-                start_column,
+            adicionar_token(
+                "STRING", codigo[inicio:indice], linha_inicial, coluna_inicial
             )
             continue
 
-        # Operadores: tenta reconhecer primeiro o mais longo.
-        matched = False
+        operador_encontrado = False
 
-        for size in (3, 2):
-            candidate = source[i:i + size]
+        for tamanho_operador in (3, 2, 1):
+            candidato = codigo[indice:indice + tamanho_operador]
 
-            if candidate in OPERATORS:
-                add_token(
-                    OPERATORS[candidate],
-                    candidate,
-                    start_line,
-                    start_column,
+            if candidato in OPERADORES:
+                adicionar_token(
+                    "OPERADOR_LÓGICO",
+                    candidato,
+                    linha_inicial,
+                    coluna_inicial,
                 )
-                i += size
-                column += size
-                matched = True
+                indice += tamanho_operador
+                coluna += tamanho_operador
+                operador_encontrado = True
                 break
 
-        if matched:
+        if operador_encontrado:
             continue
 
-        # Símbolos de um único caractere.
-        if char in SINGLE_SIMBOLS:
-            add_token(
-            SINGLE_SIMBOLS[char],
-                char,
-                start_line,
-                start_column,
+        if caractere in DELIMITADORES:
+            adicionar_token(
+                "DELIMITADOR",
+                caractere,
+                linha_inicial,
+                coluna_inicial,
             )
-            i += 1
-            column += 1
+            indice += 1
+            coluna += 1
             continue
 
-        # Qualquer caractere não reconhecido gera erro.
-        raise LexicalError(
-            f"Caractere inválido {char!r} "
-            f"na linha {line}, coluna {column}"
+        raise ErroLexico(
+            f"Caractere inválido {caractere!r} "
+            f"na linha {linha}, coluna {coluna}"
         )
 
-    add_token("EOF", "", line, column)
+    adicionar_token("FIM_DE_ARQUIVO", "", linha, coluna)
     return tokens
+
+
+# Mantém os nomes anteriores disponíveis para quem já importa o lexer.
+LexicalError = ErroLexico
+lexer = analisar_lexico

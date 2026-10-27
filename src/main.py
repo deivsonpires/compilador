@@ -2,11 +2,11 @@
 import sys
 from pathlib import Path
 
-from lexer import lexer, LexicalError
+from lexer import analisar_lexico, ErroLexico
 from tab_simbol import Tab_Simbol
 
 
-def display_tokens(tokens):
+def exibir_tokens(tokens):
     print("\n=== LISTA DE TOKENS ===")
 
     print(
@@ -19,50 +19,57 @@ def display_tokens(tokens):
     print("-" * 66)
 
     for token in tokens:
+        if token.tipo == "FIM_DE_ARQUIVO":
+            continue
+
         print(
-            f"{token.type:<22}"
-            f"{token.value!r:<24}"
-            f"{token.line:<10}"
-            f"{token.column:<10}"
+            f"{token.tipo:<22}"
+            f"{token.lexema!r:<24}"
+            f"{token.linha:<10}"
+            f"{token.coluna:<10}"
         )
 
 
 def main():
+    reconfigurar_saida = getattr(sys.stdout, "reconfigure", None)
+    if callable(reconfigurar_saida):
+        reconfigurar_saida(encoding="utf-8")
+
     if len(sys.argv) != 2:
         print(
             "Uso: python src/main.py <arquivo.c>"
         )
         return 1
 
-    source_path = Path(sys.argv[1])
+    caminho_fonte = Path(sys.argv[1])
 
-    if not source_path.is_file():
+    if not caminho_fonte.is_file():
         print(
-            f"Erro: arquivo não encontrado: {source_path}"
+            f"Erro: arquivo não encontrado: {caminho_fonte}"
         )
         return 1
 
-    if source_path.suffix.lower() != ".c":
+    if caminho_fonte.suffix.lower() != ".c":
         print("Erro: informe um arquivo com extensão .c")
         return 1
 
     try:
-        source = source_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError) as error:
-        print(f"Erro ao ler o arquivo: {error}")
+        codigo = caminho_fonte.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as erro:
+        print(f"Erro ao ler o arquivo: {erro}")
         return 1
 
-    tab_simbol = Tab_Simbol()
+    tabela_simbolos = Tab_Simbol()
 
     try:
-        tokens = lexer(source, tab_simbol)
-    except LexicalError as error:
-        print(f"\n[ERRO LÉXICO] {error}")
+        tokens = analisar_lexico(codigo, tabela_simbolos)
+    except ErroLexico as erro:
+        print(f"\n[ERRO LÉXICO] {erro}")
         return 1
 
-    print(f"Arquivo analisado: {source_path}")
-    display_tokens(tokens)
-    tab_simbol.display()
+    print(f"Arquivo analisado: {caminho_fonte}")
+    exibir_tokens(tokens)
+    tabela_simbolos.display()
 
     print("\nAnálise léxica concluída com sucesso.")
     return 0
