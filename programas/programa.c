@@ -1,5 +1,17 @@
-int a;
-int x;
+#include <stdio.h>
+int soma(int x, int y);
 
-// Exemplo de atribuição aritmética
-x = a + 5;
+int main() {
+    int a = 5;
+    int b = 10;
+
+    int result = soma(a, b);
+
+    printf("%d\n", result);
+
+    return 0;
+}
+
+int soma(int x, int y) {
+    return x + y;
+}
