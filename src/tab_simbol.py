@@ -52,7 +52,7 @@ class Tab_Simbol:
         print("\n=== TABELA DE SÍMBOLOS ===")
 
         print(
-            f"{'Ordem':<8}"
+            f"{'ID':<8}"
             f"{'Lexema':<18}"
             f"{'Categoria':<20}"
             f"{'Tipo de token':<18}"
@@ -65,7 +65,7 @@ class Tab_Simbol:
             declared_type = simbol.declared_type or "-"
 
             print(
-                f"{simbol.insertion_order:<8}"
+                f"#{simbol.insertion_order:<7}"
                 f"{simbol.lexeme:<18}"
                 f"{simbol.category:<20}"
                 f"{simbol.token_type:<18}"
