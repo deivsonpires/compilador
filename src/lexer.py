@@ -2,7 +2,7 @@ from tokens import Token
 from tab_simbol import Tab_Simbol
 
 
-PALAVRAS_CHAVE = {
+PALAVRAS_RESERVADA = {
     "auto", "break", "case", "char", "const",
     "continue", "default", "do", "double", "else",
     "enum", "extern", "float", "for", "goto", "if",
@@ -105,8 +105,8 @@ def analisar_lexico(codigo, tabela_simbolos=None):
 
             valor = codigo[inicio:indice]
             tipo = (
-                "PALAVRA_CHAVE"
-                if valor in PALAVRAS_CHAVE
+                "PALAVRA_RESERVADA"
+                if valor in PALAVRAS_RESERVADA
                 else "IDENTIFICADOR"
             )
 
