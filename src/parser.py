@@ -20,6 +20,6 @@ TIPOS = {"int", "float", "char", "double"}
 NAO_E_DECLARACAO = {"(", ")", ",", "["}
 
 
-# Um tipo de erro nosso (igual ao ErroLexico do lexer)
+# Um tipo de erro (igual ao ErroLexico do lexer)
 class ErroSintatico(Exception):
     pass
