@@ -1,16 +1,23 @@
-from typing import Optional
-from tokens import Token
-from tab_simbol import Tab_Simbol
+try:
+    from .tokens import Token
+    from .tab_simbol import Tab_Simbol
+except ImportError:  # pragma: no cover - compatibilidade ao executar o script diretamente
+    from tokens import Token
+    from tab_simbol import Tab_Simbol
 
+
+# Palavras-chave padrão da linguagem C
 PALAVRAS_CHAVE = {
     "int", "float", "char", "double", "void",
     "if", "else", "while", "for", "return",
     "break", "continue", "struct", "switch",
     "case", "default", "do", "sizeof",
 }
- 
+
+# Tipos primitivos de dados
 TIPOS_DADOS = {"int", "float", "char", "double", "void"}
 
+# Operadores padrão da linguagem C (aritméticos, relacionais, lógicos e atribuição)
 OPERADORES = {
     "++", "--", "==", "!=", "<=", ">=", "&&", "||",
     "+=", "-=", "*=", "/=", "%=",
@@ -28,8 +35,8 @@ class ErroLexico(Exception):
     pass
 
 
-def tipo_tab_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
-    """Classifica identificadores para popular a tabela de símbolos."""
+def _popular_tabela_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
+    """Classifica identificadores e palavras reservadas para popular a tabela de símbolos."""
     dentro_parametros = False
     tipo_atual = None
     linha_diretiva = -1
@@ -46,6 +53,13 @@ def tipo_tab_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
         if token.tipo == "PALAVRA_CHAVE":
             if token.lexema in TIPOS_DADOS:
                 tipo_atual = token.lexema
+
+            tabela_simbolos.add(
+                lexeme=token.lexema,
+                category="Palavra Reservada",
+                token_type="PALAVRA_CHAVE",
+                declared_type=token.lexema if token.lexema in TIPOS_DADOS else "-",
+            )
 
         elif token.tipo == "IDENTIFICADOR":
             proximo = tokens[i + 1] if i + 1 < len(tokens) else None
@@ -66,9 +80,12 @@ def tipo_tab_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
                 tipo_lex = "Variável"
                 tipo_dec = "-"
 
-            tabela_simbolos.add(token.lexema, tipo_lex, "IDENTIFICADOR")
-            if tipo_dec != "-":
-                tabela_simbolos.set_declared_type(token.lexema, tipo_dec)
+            tabela_simbolos.add(
+                lexeme=token.lexema,
+                category=tipo_lex,
+                token_type="IDENTIFICADOR",
+                declared_type=tipo_dec,
+            )
 
             # Se o próximo não for vírgula (que mantém tipo em `int a, b;`), limpa tipo_atual
             if proximo and proximo.lexema != ",":
@@ -86,12 +103,9 @@ def tipo_tab_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
                 tipo_atual = None
 
 
-def analisar_lexico(
-    codigo: str,
-    tabela_simbolos: Optional[Tab_Simbol] = None,
-) -> list[Token]:
+def analisar_lexico(codigo: str, tabela_simbolos: Tab_Simbol | None = None) -> list[Token]:
     """Executa a análise léxica do código-fonte em C.
-
+    
     Identifica tokens (PALAVRA_CHAVE, IDENTIFICADOR, OPERADOR, DELIMITADOR,
     NÚMERO, STRING e FIM_DE_ARQUIVO) e preenche a Tabela de Símbolos.
     """
@@ -248,7 +262,7 @@ def analisar_lexico(
     tokens.append(Token("FIM_DE_ARQUIVO", "", linha, coluna))
 
     # Preenche a Tabela de Símbolos com os identificadores e palavras-chave
-    tipo_tab_simbolos(tokens, tabela_simbolos)
+    _popular_tabela_simbolos(tokens, tabela_simbolos)
 
     return tokens
 

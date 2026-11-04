@@ -16,16 +16,20 @@ class Tab_Simbol:
         self._simbol = {}
         self._next_order = 1
 
-    def add(self, lexeme, category, token_type):
+    def add(self, lexeme, category, token_type, declared_type=None):
         # Evita duplicar um símbolo já registrado.
         if lexeme in self._simbol:
-            return self._simbol[lexeme]
+            simbol = self._simbol[lexeme]
+            if declared_type is not None:
+                simbol.declared_type = declared_type
+            return simbol
 
         simbol = Simbol(
             lexeme=lexeme,
             category=category,
             token_type=token_type,
             insertion_order=self._next_order,
+            declared_type=declared_type,
         )
 
         self._simbol[lexeme] = simbol
