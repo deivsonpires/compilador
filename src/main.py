@@ -1,8 +1,7 @@
-
 import sys
 from pathlib import Path
 
-from lexer import analisar_lexico, ErroLexico
+from lexer import analisar_lexico
 from tab_simbol import Tab_Simbol
 
 
@@ -61,18 +60,25 @@ def main():
 
     tabela_simbolos = Tab_Simbol()
 
-    try:
-        tokens = analisar_lexico(codigo, tabela_simbolos)
-    except ErroLexico as erro:
-        print(f"\n[ERRO LÉXICO] {erro}")
-        return 1
+    # Recebe os tokens e a lista de erros gerados pela recuperação de pânico
+    tokens, erros_lexicos = analisar_lexico(codigo, tabela_simbolos)
 
     print(f"Arquivo analisado: {caminho_fonte}")
+    
+    # Imprime sempre os tokens reconhecidos e a tabela de símbolos
     exibir_tokens(tokens)
     tabela_simbolos.display()
 
-    print("\nAnálise léxica concluída com sucesso.")
-    return 0
+    # Verifica se existem erros para exibir no final
+    if erros_lexicos:
+        print("\n=== ERROS LÉXICOS ===")
+        for erro in erros_lexicos:
+            print(erro)
+        print("\nAnálise léxica concluída com erros.")
+        return 1
+    else:
+        print("\nAnálise léxica concluída com sucesso.")
+        return 0
 
 
 if __name__ == "__main__":
