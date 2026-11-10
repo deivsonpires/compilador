@@ -59,3 +59,36 @@ class Parser:
         if self._atual().lexema == texto:
             return self._avancar()
         raise self._erro(f"'{texto}'")
+
+    def analisar_programa(self):
+        # Lê comando por comando até o fim do arquivo
+        raiz = No("Programa")
+        while self._atual().tipo != "FIM_DE_ARQUIVO":
+            try:
+                comando = self._comando()
+            except ErroSintatico as erro:
+                self.erros.append(erro)   # guarda o erro...
+                break                     # ...e para por aqui
+            if comando is not None:
+                raiz.filhos.append(comando)
+        return raiz
+
+    def _comando(self):
+        # Descobre que comando começa agora, olhando os próximos tokens
+        token = self._atual()
+        proximo = self.tokens[self.pos + 1]
+
+        # "tipo nome ..." -> declaração
+        if (token.tipo == "PALAVRA_RESERVADA" and token.lexema in TIPOS
+                and proximo.tipo == "IDENTIFICADOR"
+                and self.tokens[self.pos + 2].lexema not in NAO_E_DECLARACAO):
+            return self._declaracao()
+
+        # "nome =" -> atribuição
+        if token.tipo == "IDENTIFICADOR" and proximo.lexema == "=":
+            return self._atribuicao()
+
+        # Qualquer outra coisa (printf, if, funções...) não é da nossa
+        # gramática: pula este token e segue
+        self._avancar()
+        return None    
