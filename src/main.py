@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 from lexer import analisar_lexico
+from parser import analisar_sintatico
 from tab_simbol import Tab_Simbol
 
 
@@ -29,6 +30,20 @@ def exibir_tokens(tokens):
         )
 
 
+def exibir_arvore(arvore, erros):
+    print("\n=== ANÁLISE SINTÁTICA - AST ===")
+
+    if arvore.filhos:
+        for comando in arvore.filhos:
+            print(comando.exibir())
+            print()
+    else:
+        print("(nenhum comando reconhecido)")
+
+    for erro in erros:
+        print(f"[ERRO SINTÁTICO] {erro}")
+
+
 def main():
     reconfigurar_saida = getattr(sys.stdout, "reconfigure", None)
     if callable(reconfigurar_saida):
@@ -53,7 +68,7 @@ def main():
         return 1
 
     try:
-        codigo = caminho_fonte.read_text(encoding="utf-8")
+        codigo = caminho_fonte.read_text(encoding="utf-8", errors="replace")
     except (OSError, UnicodeError) as erro:
         print(f"Erro ao ler o arquivo: {erro}")
         return 1
@@ -78,6 +93,9 @@ def main():
         return 1
     else:
         print("\nAnálise léxica concluída com sucesso.")
+        arvore, erros_sintaticos = analisar_sintatico(tokens)
+        exibir_arvore(arvore, erros_sintaticos)        
+        
         return 0
 
 

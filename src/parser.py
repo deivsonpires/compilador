@@ -123,3 +123,51 @@ class Parser:
             no.filhos.append(self._expressao())
         self._esperar(";")
         return no
+
+
+    def _expressao(self):
+        # Expressao: termo ( ("+" | "-") termo )*
+        # Pega o primeiro termo. Enquanto vier + ou -, junta com o próximo.
+        esquerda = self._termo()
+        while self._atual().lexema in ("+", "-"):
+            operador = self._avancar()
+            direita = self._termo()
+            esquerda = No("Expressao", operador.lexema, [esquerda, direita], operador.linha)
+        return esquerda
+
+    def _termo(self):
+        # termo: ID | NUM | STRING | chamada de função
+        token = self._atual()
+        if token.tipo == "IDENTIFICADOR":
+            self._avancar()
+            if self._atual().lexema == "(":
+                return self._chamada(token)
+            return No("ID", token.lexema, linha=token.linha)
+        if token.tipo == "NUMERO":
+            self._avancar()
+            return No("NUM", token.lexema, linha=token.linha)
+        if token.tipo == "STRING":
+            self._avancar()
+            return No("STRING", token.lexema, linha=token.linha)
+        raise self._erro("identificador ou número")
+
+    def _chamada(self, nome):
+        # Chamada de função: nome ( argumento , argumento ... )
+        self._avancar()                    # consome o "("
+        chamada = No("Chamada", nome.lexema, linha=nome.linha)
+        if self._atual().lexema != ")":    # tem argumentos
+            chamada.filhos.append(self._expressao())
+            while self._atual().lexema == ",":
+                self._avancar()
+                chamada.filhos.append(self._expressao())
+        self._esperar(")")
+        return chamada
+
+
+
+def analisar_sintatico(tokens):
+    # Função que o main.py chama. Devolve (árvore, lista de erros).
+    parser = Parser(tokens)
+    arvore = parser.analisar_programa()
+    return arvore, parser.erros
+
