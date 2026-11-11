@@ -92,3 +92,34 @@ class Parser:
         # gramática: pula este token e segue
         self._avancar()
         return None    
+
+    
+    
+
+    def _atribuicao(self):
+        # Atribuicao: ID "=" Expressao ";"
+        nome = self._avancar()
+        igual = self._avancar()   # já sabemos que é o "="
+        expressao = self._expressao()
+        self._esperar(";")
+        return No("Atribuicao", linha=nome.linha, filhos=[
+            No("ID", nome.lexema, linha=nome.linha),
+            No("OP_ATRIB", igual.lexema, linha=igual.linha),
+            expressao,
+        ])
+
+    def _declaracao(self):
+        # Declaracao: tipo ID [ "=" Expressao ] ";"
+        tipo = self._avancar()
+        nome = self._avancar()    # já sabemos que é um identificador
+        no = No("Declaracao", linha=tipo.linha, filhos=[
+            No("TIPO", tipo.lexema, linha=tipo.linha),
+            No("ID", nome.lexema, linha=nome.linha),
+        ])
+        # Parte opcional: só lê "= valor" se o próximo token for "="
+        if self._atual().lexema == "=":
+            igual = self._avancar()
+            no.filhos.append(No("OP_ATRIB", igual.lexema, linha=igual.linha))
+            no.filhos.append(self._expressao())
+        self._esperar(";")
+        return no
