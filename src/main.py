@@ -3,6 +3,7 @@ from pathlib import Path
 
 from lexer import analisar_lexico
 from parser import analisar_sintatico
+from semantic import analisar_semantico
 from tab_simbol import Tab_Simbol
 
 
@@ -42,6 +43,16 @@ def exibir_arvore(arvore, erros):
 
     for erro in erros:
         print(f"[ERRO SINTÁTICO] {erro}")
+
+
+def exibir_semantico(erros):
+    print("\n=== ANÁLISE SEMÂNTICA ===")
+
+    if erros:
+        for erro in erros:
+            print(f"[ERRO SEMÂNTICO] {erro}")
+    else:
+        print("Análise semântica concluída com sucesso. Nenhum erro encontrado.")
 
 
 def main():
@@ -93,11 +104,15 @@ def main():
     else:
         print("\nAnálise léxica concluída com sucesso.")
 
-    # Prossegue sempre para a análise sintática (Slide 3 e Slide 15)
+    # Prossegue sempre para a análise sintática
     arvore, erros_sintaticos = analisar_sintatico(tokens)
     exibir_arvore(arvore, erros_sintaticos)
 
-    if erros_lexicos or erros_sintaticos:
+    # Prossegue para a análise semântica
+    erros_semanticos = analisar_semantico(arvore, tabela_simbolos)
+    exibir_semantico(erros_semanticos)
+
+    if erros_lexicos or erros_sintaticos or erros_semanticos:
         return 1
     return 0
 
