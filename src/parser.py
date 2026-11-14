@@ -129,15 +129,23 @@ class Parser:
         # Expressao: termo ( ("+" | "-") termo )*
         # Pega o primeiro termo. Enquanto vier + ou -, junta com o próximo.
         esquerda = self._termo()
-        while self._atual().lexema in ("+", "-"):
+        while self._atual().lexema in ("+", "-", "*", "/"):
             operador = self._avancar()
             direita = self._termo()
             esquerda = No("Expressao", operador.lexema, [esquerda, direita], operador.linha)
         return esquerda
 
     def _termo(self):
-        # termo: ID | NUM | STRING | chamada de função
+        # termo: ID | NUM | STRING | chamada de função | "(" Expressao ")"
         token = self._atual()
+        
+        # Suporte para expressões entre parênteses: ( ... )
+        if token.lexema == "(":
+            self._avancar()                  # consome o "("
+            expr = self._expressao()         # lê a expressão lá de dentro
+            self._esperar(")")               # exige o ")" no final
+            return expr
+
         if token.tipo == "IDENTIFICADOR":
             self._avancar()
             if self._atual().lexema == "(":
@@ -149,8 +157,8 @@ class Parser:
         if token.tipo == "STRING":
             self._avancar()
             return No("STRING", token.lexema, linha=token.linha)
-        raise self._erro("identificador ou número")
-
+        raise self._erro("identificador, número ou '('")
+    
     def _chamada(self, nome):
         # Chamada de função: nome ( argumento , argumento ... )
         self._avancar()                    # consome o "("
@@ -170,4 +178,3 @@ def analisar_sintatico(tokens):
     parser = Parser(tokens)
     arvore = parser.analisar_programa()
     return arvore, parser.erros
-
