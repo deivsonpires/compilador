@@ -89,15 +89,17 @@ def main():
         print("\n=== ERROS LÉXICOS ===")
         for erro in erros_lexicos:
             print(erro)
-        print("\nAnálise léxica concluída com erros.")
-        return 1
+        print("\nAnálise léxica concluída com erros. Prosseguindo para a análise sintática...")
     else:
         print("\nAnálise léxica concluída com sucesso.")
-        arvore, erros_sintaticos = analisar_sintatico(tokens)
-        exibir_arvore(arvore, erros_sintaticos)        
-        
-        return 0
 
+    # Prossegue sempre para a análise sintática (Slide 3 e Slide 15)
+    arvore, erros_sintaticos = analisar_sintatico(tokens)
+    exibir_arvore(arvore, erros_sintaticos)
+
+    if erros_lexicos or erros_sintaticos:
+        return 1
+    return 0
 
 if __name__ == "__main__":
     raise SystemExit(main())

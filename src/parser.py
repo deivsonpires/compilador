@@ -68,7 +68,7 @@ class Parser:
                 comando = self._comando()
             except ErroSintatico as erro:
                 self.erros.append(erro)   # guarda o erro...
-                break                     # ...e para por aqui
+                continue                     # ...e para por aqui
             if comando is not None:
                 raiz.filhos.append(comando)
         return raiz
