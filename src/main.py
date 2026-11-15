@@ -6,7 +6,6 @@ from parser import analisar_sintatico
 from semantic import analisar_semantico
 from tab_simbol import Tab_Simbol
 
-
 def exibir_tokens(tokens):
     print("\n=== LISTA DE TOKENS ===")
 
@@ -30,7 +29,6 @@ def exibir_tokens(tokens):
             f"{token.coluna:<10}"
         )
 
-
 def exibir_arvore(arvore, erros):
     print("\n=== ANÁLISE SINTÁTICA - AST ===")
 
@@ -44,7 +42,6 @@ def exibir_arvore(arvore, erros):
     for erro in erros:
         print(f"[ERRO SINTÁTICO] {erro}")
 
-
 def exibir_semantico(erros):
     print("\n=== ANÁLISE SEMÂNTICA ===")
 
@@ -53,7 +50,6 @@ def exibir_semantico(erros):
             print(f"[ERRO SEMÂNTICO] {erro}")
     else:
         print("Análise semântica concluída com sucesso. Nenhum erro encontrado.")
-
 
 def main():
     reconfigurar_saida = getattr(sys.stdout, "reconfigure", None)
@@ -86,16 +82,13 @@ def main():
 
     tabela_simbolos = Tab_Simbol()
 
-    # Recebe os tokens e a lista de erros gerados pela recuperação de pânico
     tokens, erros_lexicos = analisar_lexico(codigo, tabela_simbolos)
 
     print(f"Arquivo analisado: {caminho_fonte}")
     
-    # Imprime sempre os tokens reconhecidos e a tabela de símbolos
     exibir_tokens(tokens)
     tabela_simbolos.display()
 
-    # Verifica se existem erros para exibir no final
     if erros_lexicos:
         print("\n=== ERROS LÉXICOS ===")
         for erro in erros_lexicos:
@@ -104,11 +97,9 @@ def main():
     else:
         print("\nAnálise léxica concluída com sucesso.")
 
-    # Prossegue sempre para a análise sintática
     arvore, erros_sintaticos = analisar_sintatico(tokens)
     exibir_arvore(arvore, erros_sintaticos)
 
-    # Prossegue para a análise semântica
     erros_semanticos = analisar_semantico(arvore, tabela_simbolos)
     exibir_semantico(erros_semanticos)
 

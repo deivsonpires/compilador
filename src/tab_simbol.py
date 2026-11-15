@@ -19,7 +19,6 @@ class Tab_Simbol:
         simbol = self._simbol.get(lexeme)
 
         if simbol is not None:
-            # Atualiza o tipo se for detectado na declaração
             if declared_type is not None:
                 simbol.declared_type = declared_type
             return simbol

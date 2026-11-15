@@ -25,11 +25,8 @@ REGRAS_REGEX = [
     ("IDENTIFICADOR",r'[a-zA-Z_][a-zA-Z0-9_]*'),
 ]
 
-# Mantemos a classe de exceção caso queira usar para erros fatais no futuro, 
-# mas não a usaremos para caracteres inválidos agora.
 class ErroLexico(Exception):
     pass
-
 
 class AnalisadorLexico:
     def __init__(self, codigo: str):
@@ -38,7 +35,7 @@ class AnalisadorLexico:
         self.linha = 1
         self.coluna = 1
         self.tokens = []
-        self.erros = [] # <--- Nova lista para guardar os erros léxicos
+        self.erros = [] 
         
         self.regras_compiladas = [
             (tipo, re.compile(padrao)) for tipo, padrao in REGRAS_REGEX
@@ -86,20 +83,13 @@ class AnalisadorLexico:
                     break
 
             if not reconheceu:
-                # RECUPERAÇÃO DE ERRO:
                 caractere_invalido = self.codigo[self.posicao]
-                
-                # 1. Guarda a mensagem na lista de erros em vez de dar 'raise'
                 self.erros.append(f"[ERRO LÉXICO] Caractere inválido '{caractere_invalido}' na linha {self.linha}, coluna {self.coluna}")
-                
-                # 2. Ignora o caractere inválido avançando o cursor em 1
                 self.posicao += 1
                 self.coluna += 1
 
-
         self.tokens.append(Token("FIM_DE_ARQUIVO", "", self.linha, self.coluna))
         return self.tokens
-
 
 def _popular_tabela_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
     dentro_parametros = False
@@ -140,8 +130,6 @@ def _popular_tabela_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
             if proximo and proximo.lexema != ",":
                 tipo_atual = None
 
-
-# ATENÇÃO: A função principal agora retorna uma tupla com (tokens, erros)
 def analisar_lexico(codigo: str, tabela_simbolos: Tab_Simbol | None = None) -> tuple[list[Token], list[str]]:
     if tabela_simbolos is None:
         tabela_simbolos = Tab_Simbol()
@@ -150,8 +138,6 @@ def analisar_lexico(codigo: str, tabela_simbolos: Tab_Simbol | None = None) -> t
     tokens = analisador.analisar()
     _popular_tabela_simbolos(tokens, tabela_simbolos)
     
-    # Retorna tanto os tokens quanto a lista de erros capturados
     return tokens, analisador.erros
-
 
 lexer = analisar_lexico
