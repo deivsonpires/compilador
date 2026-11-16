@@ -24,13 +24,12 @@ class AnalisadorSemantico:
         self._checar_compatibilidade(no_id.valor, no_expressao, comando.linha)
 
     def _checar_compatibilidade(self, nome_variavel, no_expressao, linha):
-        # Busca a variável na Tabela de Símbolos
         simbolo = self.tabela.lookup(nome_variavel)
 
-        if simbolo is None or simbolo.declared_type is None:
+        if simbolo is None or simbolo.tipo_declarado is None:
             return
 
-        tipo_variavel = simbolo.declared_type
+        tipo_variavel = simbolo.tipo_declarado
         tipo_valor = self._descobrir_tipo(no_expressao)
 
         if tipo_valor is None:
@@ -57,7 +56,7 @@ class AnalisadorSemantico:
         if no.rotulo == "ID":
             simbolo = self.tabela.lookup(no.valor)
             if simbolo is not None:
-                return simbolo.declared_type
+                return simbolo.tipo_declarado
             return None
 
         if no.rotulo == "Expressao":
@@ -78,7 +77,7 @@ class AnalisadorSemantico:
         if no.rotulo == "Chamada":
             simbolo = self.tabela.lookup(no.valor)
             if simbolo is not None:
-                return simbolo.declared_type
+                return simbolo.tipo_declarado
             return None
 
         return None

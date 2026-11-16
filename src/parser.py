@@ -1,6 +1,7 @@
 from arvore import No
+from lexer import TIPOS_DADOS
 
-TIPOS = {"int", "float", "char", "double"}
+DADOS = TIPOS_DADOS
 
 NAO_E_DECLARACAO = {"(", ")", ",", "["}
 
@@ -10,8 +11,8 @@ class ErroSintatico(Exception):
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
-        self.pos = 0 
-        self.erros = []        
+        self.pos = 0
+        self.erros = []
 
     def _atual(self):
         return self.tokens[self.pos]
@@ -43,8 +44,8 @@ class Parser:
             try:
                 comando = self._comando()
             except ErroSintatico as erro:
-                self.erros.append(erro)  
-                continue                    
+                self.erros.append(erro)
+                continue
             if comando is not None:
                 raiz.filhos.append(comando)
         return raiz
@@ -53,7 +54,7 @@ class Parser:
         token = self._atual()
         proximo = self.tokens[self.pos + 1]
 
-        if (token.tipo == "PALAVRA_RESERVADA" and token.lexema in TIPOS
+        if (token.tipo == "PALAVRA_RESERVADA" and token.lexema in DADOS
                 and proximo.tipo == "IDENTIFICADOR"
                 and self.tokens[self.pos + 2].lexema not in NAO_E_DECLARACAO):
             return self._declaracao()
@@ -62,11 +63,11 @@ class Parser:
             return self._atribuicao()
 
         self._avancar()
-        return None    
+        return None
 
     def _atribuicao(self):
         nome = self._avancar()
-        igual = self._avancar()  
+        igual = self._avancar()
         expressao = self._expressao()
         self._esperar(";")
         return No("Atribuicao", linha=nome.linha, filhos=[
@@ -77,7 +78,7 @@ class Parser:
 
     def _declaracao(self):
         tipo = self._avancar()
-        nome = self._avancar()    
+        nome = self._avancar()
         no = No("Declaracao", linha=tipo.linha, filhos=[
             No("TIPO", tipo.lexema, linha=tipo.linha),
             No("ID", nome.lexema, linha=nome.linha),
@@ -90,8 +91,16 @@ class Parser:
         return no
 
     def _expressao(self):
+        esquerda = self._multiplicacao()
+        while self._atual().lexema in ("+", "-"):
+            operador = self._avancar()
+            direita = self._multiplicacao()
+            esquerda = No("Expressao", operador.lexema, [esquerda, direita], operador.linha)
+        return esquerda
+
+    def _multiplicacao(self):
         esquerda = self._termo()
-        while self._atual().lexema in ("+", "-", "*", "/"):
+        while self._atual().lexema in ("*", "/", "%"):
             operador = self._avancar()
             direita = self._termo()
             esquerda = No("Expressao", operador.lexema, [esquerda, direita], operador.linha)
@@ -99,11 +108,16 @@ class Parser:
 
     def _termo(self):
         token = self._atual()
-        
+
+        if token.lexema == "-" and self.tokens[self.pos + 1].tipo == "NUMERO":
+            self._avancar()
+            numero = self._avancar()
+            return No("NUM", "-" + numero.lexema, linha=token.linha)
+
         if token.lexema == "(":
-            self._avancar()                  
-            expr = self._expressao()         
-            self._esperar(")")               
+            self._avancar()
+            expr = self._expressao()
+            self._esperar(")")
             return expr
 
         if token.tipo == "IDENTIFICADOR":
@@ -118,11 +132,11 @@ class Parser:
             self._avancar()
             return No("STRING", token.lexema, linha=token.linha)
         raise self._erro("identificador, número ou '('")
-    
+
     def _chamada(self, nome):
-        self._avancar()                  
+        self._avancar()
         chamada = No("Chamada", nome.lexema, linha=nome.linha)
-        if self._atual().lexema != ")":    
+        if self._atual().lexema != ")":
             chamada.filhos.append(self._expressao())
             while self._atual().lexema == ",":
                 self._avancar()

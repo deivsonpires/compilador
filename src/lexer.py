@@ -16,11 +16,11 @@ PALAVRAS_RESERVADAS = TIPOS_DADOS | {
 }
 
 REGRAS_REGEX = [
-    ("COMENTARIOS",  r'#.*|//.*|/\*[\s\S]*?\*/|[ \t]+'),
-    ("ESPACOS",      r'\n'),
+    ("COMENTARIOS",  r'#.*|//.*|/\*[\s\S]*?\*/'),
+    ("ESPACOS",      r'[ \t\n]+'),
     ("STRING",       r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\''),
     ("NUMERO",       r'\d+(\.\d+)?'),
-    ("OPERADOR",     r'\+\+|--|==|!=|<=|>=|&&|\|\||\+=|-=|\*=|/=|%=|\+|-|\*|/|%|=|<|>|!'),
+    ("OPERADOR",     r'\+\+|--|==|!=|<=|>=|&&|&|\|\||\+=|-=|\*=|/=|%=|\+|-|\*|/|%|=|<|>|!'),
     ("DELIMITADOR",  r'[;,()\{\}\[\]\.:]'),
     ("IDENTIFICADOR",r'[a-zA-Z_][a-zA-Z0-9_]*'),
 ]
@@ -32,8 +32,8 @@ class AnalisadorLexico:
         self.linha = 1
         self.coluna = 1
         self.tokens = []
-        self.erros = [] 
-        
+        self.erros = []
+
         self.regras_compiladas = [
             (tipo, re.compile(padrao)) for tipo, padrao in REGRAS_REGEX
         ]
@@ -57,23 +57,9 @@ class AnalisadorLexico:
                 if match:
                     lexema = match.group(0)
 
-                    if tipo == "COMENTARIOS":
-                        self._atualizar_posicao(lexema)
-                        reconheceu = True
-                        break
-
-                    if tipo == "ESPACOS":
-                        self.linha += 1
-                        self.coluna = 1
-                        self.posicao += 1
-                        reconheceu = True
-                        break
-
-                    if tipo == "IDENTIFICADOR":
-                        tipo_token = "PALAVRA_RESERVADA" if lexema in PALAVRAS_RESERVADAS else "IDENTIFICADOR"
+                    if tipo not in ("COMENTARIOS", "ESPACOS"):
+                        tipo_token = "PALAVRA_RESERVADA" if tipo == "IDENTIFICADOR" and lexema in PALAVRAS_RESERVADAS else tipo
                         self.tokens.append(Token(tipo_token, lexema, self.linha, self.coluna))
-                    else:
-                        self.tokens.append(Token(tipo, lexema, self.linha, self.coluna))
 
                     self._atualizar_posicao(lexema)
                     reconheceu = True
@@ -82,8 +68,7 @@ class AnalisadorLexico:
             if not reconheceu:
                 caractere_invalido = self.codigo[self.posicao]
                 self.erros.append(f"[ERRO LÉXICO] Caractere inválido '{caractere_invalido}' na linha {self.linha}, coluna {self.coluna}")
-                self.posicao += 1
-                self.coluna += 1
+                self._atualizar_posicao(caractere_invalido)
 
         self.tokens.append(Token("FIM_DE_ARQUIVO", "", self.linha, self.coluna))
         return self.tokens
@@ -120,8 +105,8 @@ def _popular_tabela_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
             tabela_simbolos.add(
                 lexeme=token.lexema,
                 category=categoria,
-                token_type="IDENTIFICADOR",
-                declared_type=tipo_atual,
+                tipo_token="IDENTIFICADOR",
+                tipo_declarado=tipo_atual,
             )
 
             if proximo and proximo.lexema != ",":
@@ -134,5 +119,5 @@ def analisar_lexico(codigo: str, tabela_simbolos: Tab_Simbol | None = None) -> t
     analisador = AnalisadorLexico(codigo)
     tokens = analisador.analisar()
     _popular_tabela_simbolos(tokens, tabela_simbolos)
-    
+
     return tokens, analisador.erros

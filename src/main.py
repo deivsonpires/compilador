@@ -93,7 +93,7 @@ def main():
         print("\n=== ERROS LÉXICOS ===")
         for erro in erros_lexicos:
             print(erro)
-        print("\nAnálise léxica concluída com erros. Prosseguindo para a análise sintática...")
+        print("\nAnálise léxica concluída com erros.")
     else:
         print("\nAnálise léxica concluída com sucesso.")
 

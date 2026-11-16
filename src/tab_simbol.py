@@ -5,25 +5,25 @@ from typing import Optional
 class Simbol:
     lexeme: str
     category: str
-    token_type: str
-    insertion_order: int
-    declared_type: Optional[str] = None
+    tipo_token: str
+    ordem: int
+    tipo_declarado: Optional[str] = None
 
 
 class Tab_Simbol:
     def __init__(self):
         self._simbol = {}
 
-    def add(self, lexeme: str, category: str, token_type: str, declared_type: Optional[str] = None):
+    def add(self, lexeme: str, category: str, tipo_token: str, tipo_declarado: Optional[str] = None):
         simbol = self._simbol.get(lexeme)
 
         if simbol is not None:
-            if declared_type is not None:
-                simbol.declared_type = declared_type
+            if tipo_declarado is not None:
+                simbol.tipo_declarado = tipo_declarado
             return simbol
 
         ordem = len(self._simbol) + 1
-        simbol = Simbol(lexeme, category, token_type, ordem, declared_type)
+        simbol = Simbol(lexeme, category, tipo_token, ordem, tipo_declarado)
         self._simbol[lexeme] = simbol
         return simbol
 
@@ -41,9 +41,9 @@ class Tab_Simbol:
 
         for simbol in self.all_symbol():
             print(
-                f"#{simbol.insertion_order:<5}"
+                f"#{simbol.ordem:<5}"
                 f"{simbol.lexeme:<18}"
                 f"{simbol.category:<16}"
-                f"{simbol.token_type:<20}"
-                f"{simbol.declared_type or '-':<15}"
+                f"{simbol.tipo_token:<20}"
+                f"{simbol.tipo_declarado or '-':<15}"
             )
