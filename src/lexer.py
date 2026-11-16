@@ -25,9 +25,6 @@ REGRAS_REGEX = [
     ("IDENTIFICADOR",r'[a-zA-Z_][a-zA-Z0-9_]*'),
 ]
 
-class ErroLexico(Exception):
-    pass
-
 class AnalisadorLexico:
     def __init__(self, codigo: str):
         self.codigo = codigo
@@ -139,5 +136,3 @@ def analisar_lexico(codigo: str, tabela_simbolos: Tab_Simbol | None = None) -> t
     _popular_tabela_simbolos(tokens, tabela_simbolos)
     
     return tokens, analisador.erros
-
-lexer = analisar_lexico
