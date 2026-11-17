@@ -10,5 +10,4 @@ int main() {
 
     printf("Total a pagar: %.2f\n", total)
 }
-
-int a = 10 + 4 * 2;
+int 1valor = 3;

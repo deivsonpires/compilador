@@ -1,12 +1,11 @@
 #include <stdio.h>
 
 int main() {
-    int a = 10;
-    int b = 20;
-    int c = (10 + 20 * 30 / );
-    int d = 3 + ;
-    x = 10 + int y = 20;
+    int idade = 25
 
-    printf("Resultado: %d\\n", c);
-    return 0;
+    if (idade >= 18) {
+        printf("Você é maior de idade.\n")
+    }
+
+    return 0
 }

@@ -1,8 +1,6 @@
 from arvore import No
 from lexer import TIPOS_DADOS
 
-DADOS = TIPOS_DADOS
-
 NAO_E_DECLARACAO = {"(", ")", ",", "["}
 
 class ErroSintatico(Exception):
@@ -53,16 +51,36 @@ class Parser:
     def _comando(self):
         token = self._atual()
         proximo = self.tokens[self.pos + 1]
-
-        if (token.tipo == "PALAVRA_RESERVADA" and token.lexema in DADOS
+        if (token.tipo == "PALAVRA_RESERVADA" and token.lexema in TIPOS_DADOS
                 and proximo.tipo == "IDENTIFICADOR"
                 and self.tokens[self.pos + 2].lexema not in NAO_E_DECLARACAO):
             return self._declaracao()
-
         if token.tipo == "IDENTIFICADOR" and proximo.lexema == "=":
             return self._atribuicao()
-
+        if token.lexema == "return":
+            return self._retorno()
+        if token.tipo == "IDENTIFICADOR" and proximo.lexema == "(":
+            argumento = self.tokens[self.pos + 2]
+            if argumento.tipo == "PALAVRA_RESERVADA" and argumento.lexema in TIPOS_DADOS:
+                self._avancar()
+                return None
+            return self._chamada_como_comando()
         self._avancar()
+        return None
+
+    def _retorno(self):
+        self._avancar()
+        if self._atual().lexema not in (";", "}") and self._atual().tipo != "FIM_DE_ARQUIVO":
+            self._expressao()
+        self._esperar(";")
+        return None
+
+    def _chamada_como_comando(self):
+        chamada = self._avancar()
+        self._chamada(chamada)
+        if self._atual().lexema == "{":
+            return None
+        self._esperar(";")
         return None
 
     def _atribuicao(self):
@@ -108,18 +126,15 @@ class Parser:
 
     def _termo(self):
         token = self._atual()
-
         if token.lexema == "-" and self.tokens[self.pos + 1].tipo == "NUMERO":
             self._avancar()
             numero = self._avancar()
             return No("NUM", "-" + numero.lexema, linha=token.linha)
-
         if token.lexema == "(":
             self._avancar()
             expr = self._expressao()
             self._esperar(")")
             return expr
-
         if token.tipo == "IDENTIFICADOR":
             self._avancar()
             if self._atual().lexema == "(":
