@@ -15,15 +15,36 @@ class AnalisadorSemantico:
         if len(comando.filhos) == 4:
             no_id = comando.filhos[1]
             no_expressao = comando.filhos[3]
+            self._checar_variaveis_nao_declaradas(no_expressao, comando.linha)
             self._checar_compatibilidade(no_id.valor, no_expressao, comando.linha)
 
     def _verificar_atribuicao(self, comando):
         no_id = comando.filhos[0]
         no_expressao = comando.filhos[2]
+        self._checar_variavel_declarada(no_id.valor, comando.linha)
+        self._checar_variaveis_nao_declaradas(no_expressao, comando.linha)
         self._checar_compatibilidade(no_id.valor, no_expressao, comando.linha)
 
-    def _checar_compatibilidade(self, nome_variavel, no_expressao, linha):
-        simbolo = self.tabela.lookup(nome_variavel)
+    def _checar_variavel_declarada(self, id_variavel, linha):
+        simbolo = self.tabela.lookup_id(id_variavel)
+        if simbolo is None or simbolo.category == "Função":
+            return
+        if simbolo.tipo_declarado is None or simbolo.linha_declaracao > linha:
+            mensagem = (
+                f"Variável '{simbolo.lexeme}' utilizada na linha {linha} "
+                f"não foi declarada previamente."
+            )
+            self.erros.append(mensagem)
+
+    def _checar_variaveis_nao_declaradas(self, no, linha):
+        if no.rotulo == "ID":
+            self._checar_variavel_declarada(no.valor, linha)
+        if no.rotulo == "Expressao" or no.rotulo == "Chamada":
+            for filho in no.filhos:
+                self._checar_variaveis_nao_declaradas(filho, linha)
+
+    def _checar_compatibilidade(self, id_variavel, no_expressao, linha):
+        simbolo = self.tabela.lookup_id(id_variavel)
         if simbolo is None or simbolo.tipo_declarado is None:
             return
         tipo_variavel = simbolo.tipo_declarado
@@ -47,7 +68,7 @@ class AnalisadorSemantico:
                 return "float"
             return "int"
         if no.rotulo == "ID":
-            simbolo = self.tabela.lookup(no.valor)
+            simbolo = self.tabela.lookup_id(no.valor)
             if simbolo is not None:
                 return simbolo.tipo_declarado
             return None
@@ -62,7 +83,7 @@ class AnalisadorSemantico:
                 return "float"
             return "int"
         if no.rotulo == "Chamada":
-            simbolo = self.tabela.lookup(no.valor)
+            simbolo = self.tabela.lookup_id(no.valor)
             if simbolo is not None:
                 return simbolo.tipo_declarado
             return None

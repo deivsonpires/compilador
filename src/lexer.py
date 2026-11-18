@@ -108,12 +108,14 @@ def _popular_tabela_simbolos(tokens: list[Token], tabela_simbolos: Tab_Simbol):
                 categoria = "Parâmetro"
             else:
                 categoria = "Variável"
-            tabela_simbolos.add(
+            simbolo = tabela_simbolos.add(
                 lexeme=token.lexema,
                 category=categoria,
                 tipo_token="IDENTIFICADOR",
                 tipo_declarado=tipo_atual,
+                linha=token.linha,
             )
+            token.lexema = f"#{simbolo.ordem}"
             if proximo and proximo.lexema != ",":
                 tipo_atual = None
 
