@@ -1,13 +1,14 @@
 #include <stdio.h>
 
 int main() {
-
-    float preco = 50.5;
-    int @quantidade = 4;
-    float total = (preco * 2 - @@@);
-    int desconto = 10 + ;
-    valor = 100 - int taxa = 15;
-
-    printf("Total a pagar: %.2f\n", total)
+    int 3valor = 10;
+    float taxa = 20.3.4;
+    float incompleto = 15.;
+    char vazio = '';
+    char longo = 'abc';
+    char aberto = 'x;
+    char *texto = "ola mundo;
+    int simbolo = 5 @ 2;
+    /* comentario sem fim
+    return 0;
 }
-int 1valor = 3;
