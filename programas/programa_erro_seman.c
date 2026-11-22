@@ -4,7 +4,7 @@ int main() {
     int idade = "oi"; 
 
     float nota1 = 8.0;
-    float nota2 = 6.0;
+    nota2 = 6.0;
     float media;
 
     media = nota1 + nota2 / 2;
